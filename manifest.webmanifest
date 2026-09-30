@@ -1,0 +1,14 @@
+{
+  "name": "Ashen Kage",
+  "short_name": "Ashen Kage",
+  "description": "A dark, cinematic puzzle-platformer. A tiny figure carrying one light through a dying world. By Dark Node.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05060a",
+  "theme_color": "#05060a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

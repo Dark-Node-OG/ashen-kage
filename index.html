@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#05060a" />
+  <title>ASHEN KAGE — DARK NODE</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game"></canvas>
+
+    <!-- Minimal in-world UI -->
+    <div id="hud">
+      <div id="chapterTitle" class="hud-chapter"></div>
+      <div id="livesHud" class="hud-lives"></div>
+      <div id="deathCounter" class="hud-deaths"></div>
+      <button id="pauseBtn" class="hud-pause">❚❚</button>
+    </div>
+
+    <!-- STUDIO SPLASH -->
+    <div id="splashScreen" class="overlay splash show">
+      <div class="splash-bg"></div>
+      <div class="splash-fog"></div>
+      <div class="splash-wrap">
+        <div class="node-mark"><span></span><span></span><span></span><b></b></div>
+        <div class="studio-big">DARK&nbsp;NODE</div>
+        <div class="studio-line"></div>
+        <div class="studio-sub">GAMING&nbsp;STUDIO</div>
+      </div>
+      <div class="splash-skip">click or press a key to skip</div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loadingScreen" class="overlay loading">
+      <div class="loading-wrap">
+        <h1 class="game-title small">ASHEN&nbsp;KAGE</h1>
+        <div class="subtitle">灰 の 影</div>
+        <div class="loadbar"><i id="loadFill"></i></div>
+        <div class="loading-text">entering the ash…</div>
+        <div class="sound-hint">tap or press any key for sound</div>
+      </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="menuScreen" class="overlay">
+      <div class="title-wrap">
+        <div class="studio">DARK NODE</div>
+        <h1 class="game-title">ASHEN&nbsp;KAGE</h1>
+        <div class="subtitle">灰 の 影</div>
+        <div class="menu-btns">
+          <button class="btn" data-act="new">New Journey</button>
+          <button class="btn" data-act="continue">Continue</button>
+          <button class="btn" data-act="chapters">Chapters</button>
+          <button class="btn" data-act="trials" id="trialsBtn">Ashen Trials</button>
+          <button class="btn" data-act="settings">Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAPTER SELECT -->
+    <div id="chaptersScreen" class="overlay">
+      <div class="panel">
+        <h2 class="panel-title">Chapters</h2>
+        <div id="chapterList" class="chapter-grid"></div>
+        <div id="ngRow" class="ng-row"></div>
+        <button class="btn small" data-act="back">Back</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settingsScreen" class="overlay">
+      <div class="panel">
+        <h2 class="panel-title">Settings</h2>
+        <label class="slider-row">Master <input type="range" id="volMaster" min="0" max="100"></label>
+        <label class="slider-row">Music <input type="range" id="volMusic" min="0" max="100"></label>
+        <label class="slider-row">Effects <input type="range" id="volSfx" min="0" max="100"></label>
+        <button class="btn small" data-act="wipe">Erase All Progress</button>
+        <button class="btn small" data-act="back">Back</button>
+      </div>
+    </div>
+
+    <!-- PAUSE -->
+    <div id="pauseScreen" class="overlay">
+      <div class="panel">
+        <h2 class="panel-title">Paused</h2>
+        <div class="menu-btns">
+          <button class="btn" data-act="resume">Resume</button>
+          <button class="btn" data-act="restart">Restart Chapter</button>
+          <button class="btn" data-act="settings">Settings</button>
+          <button class="btn" data-act="menu">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEATH -->
+    <div id="deathScreen" class="overlay"><div class="death-text">…</div></div>
+
+    <!-- GAME OVER -->
+    <div id="gameoverScreen" class="overlay">
+      <div class="complete-wrap">
+        <div class="death-text" style="font-size:clamp(34px,8vw,72px)">YOU FELL</div>
+        <div class="complete-stats" style="margin-top:10px">Out of lives.</div>
+        <div class="menu-btns">
+          <button class="btn" data-act="retry">Try Again</button>
+          <button class="btn" data-act="menu">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL COMPLETE -->
+    <div id="completeScreen" class="overlay">
+      <div class="complete-wrap">
+        <div class="complete-kicker">SECTION COMPLETE</div>
+        <h2 id="completeTitle">The Fallen Village</h2>
+        <div id="completeStats" class="complete-stats"></div>
+        <button id="continueBtn" class="btn">Walk On</button>
+      </div>
+    </div>
+
+    <!-- VICTORY -->
+    <div id="victoryScreen" class="overlay">
+      <div class="complete-wrap">
+        <div class="complete-kicker">灰 の 影</div>
+        <h2 class="game-title" style="font-size:clamp(30px,7vw,72px)">THE STORY ENDS</h2>
+        <div class="victory-text">
+          The wanderer reaches the source of the Ashen Night.<br/>
+          The province is quiet at last.<br/><br/>
+          The story ends. The mastery does not.
+        </div>
+        <div id="victoryStats" class="complete-stats"></div>
+        <button class="btn" data-act="menu">Return</button>
+      </div>
+    </div>
+
+    <!-- Rotate hint for phones held upright -->
+    <div id="rotateHint" class="rotate-hint">
+      <div class="rotate-ico">⟳</div>
+      <div>Rotate your phone to landscape</div>
+    </div>
+
+    <!-- Touch controls: analog stick (left) + branded action buttons (right) -->
+    <div id="touch" class="touch">
+      <div id="joyBase" class="joy-base"><div id="joyKnob" class="joy-knob"></div></div>
+      <div class="touch-right">
+        <button id="btnGrab" class="gbtn grab">GRAB</button>
+        <button id="btnJump" class="gbtn jump">JUMP</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+  <script>
+    // Offline support in production only — keep local dev (127.0.0.1/localhost) cache-free.
+    if('serviceWorker' in navigator &&
+       location.protocol.startsWith('http') &&
+       location.hostname!=='127.0.0.1' && location.hostname!=='localhost'){
+      window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    }
+  </script>
+</body>
+</html>
