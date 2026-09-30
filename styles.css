@@ -163,14 +163,28 @@ body.is-touch.playing .touch{ display:block; }
   background:radial-gradient(circle at 42% 38%, rgba(201,146,46,.75), rgba(122,36,25,.6));
   border:1px solid rgba(201,146,46,.5); box-shadow:0 2px 8px rgba(0,0,0,.5); transition:transform .05s linear; }
 
-.touch-right{ position:absolute; right:24px; bottom:26px; display:flex; gap:14px; align-items:flex-end; pointer-events:none; }
-.gbtn{ pointer-events:auto; touch-action:none; border-radius:50%; font-family:inherit; font-weight:600;
-  letter-spacing:1px; color:rgba(241,236,226,.85); text-shadow:0 1px 2px #000; cursor:pointer; user-select:none;
-  opacity:.82; }
+.gbtn{ position:absolute; right:24px; bottom:26px; pointer-events:auto; touch-action:none; border-radius:50%;
+  font-family:inherit; font-weight:600; letter-spacing:1px; color:rgba(241,236,226,.85);
+  text-shadow:0 1px 2px #000; cursor:pointer; user-select:none; opacity:.82;
+  display:flex; align-items:center; justify-content:center; }
 .gbtn.jump{ width:70px; height:70px; font-size:12px;
   background:radial-gradient(circle at 42% 38%, rgba(201,146,46,.35), rgba(122,74,24,.32));
   border:1px solid rgba(201,146,46,.45); box-shadow:0 3px 10px rgba(0,0,0,.4); }
-.gbtn.grab{ width:58px; height:58px; font-size:11px; color:rgba(243,221,211,.85);
+.gbtn.grab{ width:58px; height:58px; font-size:11px; right:104px; color:rgba(243,221,211,.85);
   background:radial-gradient(circle at 42% 38%, rgba(122,36,25,.4), rgba(67,16,9,.34));
   border:1px solid rgba(201,146,46,.35); box-shadow:0 3px 10px rgba(0,0,0,.4); }
 .gbtn:active{ transform:translateY(1px) scale(.95); filter:brightness(1.3); opacity:1; }
+
+/* control-layout editor */
+.edit-layer{ position:fixed; inset:0; z-index:9; display:none; pointer-events:none; }
+body.editing .edit-layer{ display:block; }
+body.editing .touch{ display:block; }
+body.editing .joy-base, body.editing .gbtn{ outline:2px dashed rgba(201,146,46,.8); cursor:move; opacity:1 !important; }
+.edit-bar{ pointer-events:auto; position:absolute; top:0; left:0; right:0; padding:14px 18px;
+  background:rgba(8,10,16,.8); border-bottom:1px solid rgba(201,146,46,.3); color:var(--ash);
+  font-size:13px; letter-spacing:2px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.edit-bar .btn{ margin-top:0; }
+
+.settings-sub{ margin:26px 0 4px; font-size:13px; letter-spacing:6px; color:rgba(201,146,46,.75);
+  text-transform:uppercase; border-top:1px solid rgba(201,146,46,.12); padding-top:20px; }
+.settings-btns{ display:flex; gap:12px; justify-content:center; margin-top:6px; }

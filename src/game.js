@@ -40,10 +40,12 @@ export class Game{
       victoryStats:$('victoryStats'), trialsBtn:$('trialsBtn'),
       chapterList:$('chapterList'), ngRow:$('ngRow'),
       volMaster:$('volMaster'), volMusic:$('volMusic'), volSfx:$('volSfx'),
+      edit:$('editControls'), ctlJoy:$('ctlJoy'), ctlBtn:$('ctlBtn'), ctlOpa:$('ctlOpa'),
     };
     this._bindUI();
     this._refreshMenu();
     this._loadSettingsUI();
+    Input.applyLayout(Save.getControls());        // place touch controls per saved layout
     // build a first world so render has something behind the intro/menu
     this._loadChapter(0, { silent:true });
     // begin with the studio splash
@@ -68,6 +70,14 @@ export class Game{
       const s={...Save.getSettings(),[key]:v}; Save.setSettings(s); this.audio.setVolumes(s); }; };
     wire(this.ui.volMaster,'master'); wire(this.ui.volMusic,'music'); wire(this.ui.volSfx,'sfx');
 
+    this.ui.edit.querySelectorAll('[data-act]').forEach(b=> b.onclick=()=>this._menuAct(b.dataset.act));
+    const ctl=()=>{ const c=Save.getControls();
+      c.joy.size=+this.ui.ctlJoy.value;
+      c.jump.size=+this.ui.ctlBtn.value; c.grab.size=Math.round(this.ui.ctlBtn.value*0.82);
+      c.opacity=this.ui.ctlOpa.value/100;
+      Save.setControls(c); Input.applyLayout(c); };
+    this.ui.ctlJoy.oninput=ctl; this.ui.ctlBtn.oninput=ctl; this.ui.ctlOpa.oninput=ctl;
+
     window.addEventListener('keydown',(e)=>{ if(e.code==='KeyM') this.audio.toggleMute(); });
 
     // first user interaction unlocks audio (browsers block autoplay) and can skip the splash
@@ -81,7 +91,9 @@ export class Game{
     window.addEventListener('keydown', unlock);
   }
   _loadSettingsUI(){ const s=Save.getSettings();
-    this.ui.volMaster.value=s.master*100; this.ui.volMusic.value=s.music*100; this.ui.volSfx.value=s.sfx*100; }
+    this.ui.volMaster.value=s.master*100; this.ui.volMusic.value=s.music*100; this.ui.volSfx.value=s.sfx*100;
+    const c=Save.getControls();
+    this.ui.ctlJoy.value=c.joy.size; this.ui.ctlBtn.value=c.jump.size; this.ui.ctlOpa.value=Math.round(c.opacity*100); }
 
   _show(name){
     ['splash','loading','menu','chapters','settings','pause','death','complete','victory','gameover'].forEach(k=>
@@ -108,7 +120,10 @@ export class Game{
       case 'resume':   this._togglePause(); break;
       case 'restart':  this._show(null); this.state='play'; this._loadChapter(this.chapterIndex); break;
       case 'menu':     this._toMenu(); break;
-      case 'wipe':     Save.wipe(); this._loadSettingsUI(); this._refreshMenu(); this._openChapters(); break;
+      case 'wipe':     Save.wipe(); Input.applyLayout(Save.getControls()); this._loadSettingsUI(); this._refreshMenu(); this._openChapters(); break;
+      case 'editlayout': this.ui.settings.classList.remove('show'); Input.enableEdit((c)=>Save.setControls(c)); break;
+      case 'doneedit':   Input.disableEdit(); this.ui.settings.classList.add('show'); break;
+      case 'resetctl':   { const c=Save.resetControls(); Input.applyLayout(c); this._loadSettingsUI(); } break;
     }
   }
   _toMenu(){ this.state='menu'; this._refreshMenu(); this._show('menu'); }

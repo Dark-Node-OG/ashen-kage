@@ -2,9 +2,16 @@
 // falling back to defaults, and never throws into the game loop.
 const KEY = 'ashenkage.save.v1';
 
+const CONTROLS = () => ({
+  opacity: 0.82,
+  joy:  { size:100, cx:0.10, cy:0.80 },
+  jump: { size:70,  cx:0.90, cy:0.80 },
+  grab: { size:58,  cx:0.795, cy:0.82 },
+});
 const DEFAULTS = () => ({
   version: 1,
   settings: { master:0.8, music:0.7, sfx:0.9 },
+  controls: CONTROLS(),
   levels: {},            // id -> { completed, bestTime, leastDeaths, shrines, shrinesMax }
 });
 
@@ -17,8 +24,11 @@ export const Save = {
       if(raw){
         const parsed = JSON.parse(raw);
         if(parsed && typeof parsed === 'object'){
-          this.data = { ...DEFAULTS(), ...parsed,
-            settings: { ...DEFAULTS().settings, ...(parsed.settings||{}) },
+          const d=DEFAULTS(), pc=parsed.controls||{};
+          this.data = { ...d, ...parsed,
+            settings: { ...d.settings, ...(parsed.settings||{}) },
+            controls: { ...d.controls, ...pc,
+              joy:{...d.controls.joy,...(pc.joy||{})}, jump:{...d.controls.jump,...(pc.jump||{})}, grab:{...d.controls.grab,...(pc.grab||{})} },
             levels: parsed.levels || {} };
         }
       }
@@ -33,6 +43,10 @@ export const Save = {
 
   getSettings(){ return this.data.settings; },
   setSettings(s){ this.data.settings = { ...this.data.settings, ...s }; this._persist(); },
+
+  getControls(){ return this.data.controls; },
+  setControls(c){ this.data.controls = c; this._persist(); },
+  resetControls(){ this.data.controls = CONTROLS(); this._persist(); return this.data.controls; },
 
   getLevel(id){ return this.data.levels[id] || null; },
 

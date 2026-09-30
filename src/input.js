@@ -1,9 +1,10 @@
-// input.js — keyboard + an analog on-screen joystick and branded action buttons (multitouch via Pointer Events)
+// input.js — keyboard + customizable analog joystick & action buttons (multitouch via Pointer Events)
 export const Input = {
   actions: { left:false, right:false, up:false, down:false, jump:false, grab:false, pause:false },
   _prevJump:false, jumpPressed:false,
   _prevGrab:false, grabPressed:false,
   pausePressed:false, _prevPause:false,
+  _els:{}, _layout:null,
 
   init(){
     const map = (code) => ({
@@ -23,6 +24,7 @@ export const Input = {
 
     if('ontouchstart' in window || navigator.maxTouchPoints > 0) document.body.classList.add('is-touch');
     this._initTouch();
+    window.addEventListener('resize', ()=>{ if(this._layout) this.applyLayout(this._layout); });
   },
 
   _initTouch(){
@@ -30,6 +32,7 @@ export const Input = {
     const joyKnob = document.getElementById('joyKnob');
     const btnJump = document.getElementById('btnJump');
     const btnGrab = document.getElementById('btnGrab');
+    this._els = { joy:joyBase, knob:joyKnob, jump:btnJump, grab:btnGrab };
     if(!joyBase) return;
     let stickId=null, jumpId=null, grabId=null;
 
@@ -50,11 +53,11 @@ export const Input = {
       this.actions.left=this.actions.right=this.actions.up=this.actions.down=false; };
 
     const down=(e)=>{
-      if(!playing()) return;
+      if(!playing() || document.body.classList.contains('editing')) return;
       const x=e.clientX, y=e.clientY;
       if(inEl(btnJump,x,y)){ jumpId=e.pointerId; this.actions.jump=true; e.preventDefault(); }
       else if(inEl(btnGrab,x,y)){ grabId=e.pointerId; this.actions.grab=true; e.preventDefault(); }
-      else if(stickId===null && x < window.innerWidth*0.55){ stickId=e.pointerId; setStick(x,y); e.preventDefault(); }
+      else if(stickId===null && (inEl(joyBase,x,y) || x < window.innerWidth*0.5)){ stickId=e.pointerId; setStick(x,y); e.preventDefault(); }
     };
     const move=(e)=>{ if(e.pointerId===stickId){ setStick(e.clientX,e.clientY); e.preventDefault(); } };
     const up=(e)=>{
@@ -66,6 +69,42 @@ export const Input = {
     window.addEventListener('pointermove', move, {passive:false});
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', up);
+  },
+
+  // ---- customizable layout ----
+  applyLayout(cfg){
+    this._layout = cfg;
+    const e=this._els; if(!e || !e.joy) return;
+    const vw=window.innerWidth, vh=window.innerHeight;
+    const place=(el,c)=>{ if(!el||!c) return;
+      el.style.width=c.size+'px'; el.style.height=c.size+'px';
+      el.style.left=Math.round(c.cx*vw - c.size/2)+'px';
+      el.style.top =Math.round(c.cy*vh - c.size/2)+'px';
+      el.style.right='auto'; el.style.bottom='auto'; el.style.opacity=cfg.opacity; };
+    place(e.joy,cfg.joy); place(e.jump,cfg.jump); place(e.grab,cfg.grab);
+  },
+
+  enableEdit(onChange){
+    document.body.classList.add('editing');
+    const e=this._els;
+    const els=[['joy',e.joy],['jump',e.jump],['grab',e.grab]];
+    this._drag=null;
+    this._editDown=(ev)=>{ for(const [k,el] of els){ if(el && (el===ev.target || el.contains(ev.target))){ this._drag={k}; ev.preventDefault(); ev.stopPropagation(); return; } } };
+    this._editMove=(ev)=>{ if(!this._drag) return; const vw=window.innerWidth, vh=window.innerHeight;
+      const c=this._layout[this._drag.k];
+      c.cx=Math.min(0.97,Math.max(0.03, ev.clientX/vw));
+      c.cy=Math.min(0.97,Math.max(0.10, ev.clientY/vh));
+      this.applyLayout(this._layout); ev.preventDefault(); };
+    this._editUp=()=>{ if(this._drag){ this._drag=null; onChange && onChange(this._layout); } };
+    window.addEventListener('pointerdown', this._editDown, {passive:false, capture:true});
+    window.addEventListener('pointermove', this._editMove, {passive:false});
+    window.addEventListener('pointerup', this._editUp);
+  },
+  disableEdit(){
+    document.body.classList.remove('editing'); this._drag=null;
+    window.removeEventListener('pointerdown', this._editDown, {capture:true});
+    window.removeEventListener('pointermove', this._editMove);
+    window.removeEventListener('pointerup', this._editUp);
   },
 
   postUpdate(){ this._prevJump=this.actions.jump; this._prevGrab=this.actions.grab; this._prevPause=this.actions.pause; },
